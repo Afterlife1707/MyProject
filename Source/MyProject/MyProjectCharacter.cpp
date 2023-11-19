@@ -300,9 +300,12 @@ void AMyProjectCharacter::CastRayForInteraction()
 	//raycasting point light
 	else if (ActorHit && hit.GetActor()->GetComponentByClass<UPointLightComponent>())
 	{
+		if (!hit.GetActor()->GetActorEnableCollision())
+			return;
+		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
+		UE_LOG(LogTemp, Warning, TEXT("light is %hhd"), hit.GetActor()->GetActorEnableCollision());
 		ResetTP();
 		bCanExtinguishLight = true;
-		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
 	}
 	else 
 	{
@@ -357,7 +360,7 @@ void AMyProjectCharacter::Interact()
 		UE_LOG(LogTemp, Warning, TEXT("charge used"));
 		bCanExtinguishLight = false;
 		CurrentPointLight->SetIntensity(0.f);
-		CurrentPointLight->SetActive(false);
+		CurrentPointLight->GetOwner()->SetActorEnableCollision(false);
 		CurrentPointLight = nullptr;
 		UE_LOG(LogTemp, Warning, TEXT("light extinguished"));
 		//play sound
