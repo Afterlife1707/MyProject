@@ -13,21 +13,21 @@ class MYPROJECT_API UMyPlayerStats : public UActorComponent
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"));
-	int ShadowTPCharges = 3;
+	int ShadowCharges = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"));
-    int MAX_TP_CHARGES = 3;
+    int MAX_CHARGES = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"));
-	float TPRechargeTime = 25.f;
+	float ChargeRefillTime = 25.f;
 	float t;
 
     UMyUserWidget* MyUserWidget;
 public:	
 	// Sets default values for this component's properties
 	UMyPlayerStats();
-	int GetTPCharges() const;
+	int GetCharges() const;
 	void SetUserWidget(UMyUserWidget* UserWidget);
-	void UseTPCharge();
-	void RechargeTP(float deltaTime);
+	void UseCharge();
+	void RefillCharge(float deltaTime);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

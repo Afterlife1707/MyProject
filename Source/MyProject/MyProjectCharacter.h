@@ -59,6 +59,9 @@ class AMyProjectCharacter : public ACharacter
 
 	//temp tp
 	class AShadowTP* CurrentTP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, meta = (AllowPrivateAccess = "true"))
+	class UPointLightComponent* CurrentPointLight;
 	
 public:
 	AMyProjectCharacter();
@@ -94,6 +97,9 @@ protected:
 	float StartTime;
 	FVector StartLocation;
 	FHitResult hit;
+
+	//light
+	bool bCanExtinguishLight;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats)
 	UMyPlayerStats* MyPlayerStats;

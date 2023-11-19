@@ -14,9 +14,9 @@ UMyPlayerStats::UMyPlayerStats()
 	// ...
 }
 
-int UMyPlayerStats::GetTPCharges() const
+int UMyPlayerStats::GetCharges() const
 {
-    return ShadowTPCharges;
+    return ShadowCharges;
 }
 
 void UMyPlayerStats::SetUserWidget(UMyUserWidget* UserWidget)
@@ -24,12 +24,12 @@ void UMyPlayerStats::SetUserWidget(UMyUserWidget* UserWidget)
 	MyUserWidget = UserWidget;
 }
 
-void UMyPlayerStats::UseTPCharge()
+void UMyPlayerStats::UseCharge()
 {
 	if (MyUserWidget)
 	{
 		MyUserWidget->UseShadowCharge();
-		ShadowTPCharges--;
+		ShadowCharges--;
 	}
 }
 
@@ -48,27 +48,27 @@ void UMyPlayerStats::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(ShadowTPCharges<MAX_TP_CHARGES)
+	if(ShadowCharges<MAX_CHARGES)
 	{
-		if(t>=TPRechargeTime)
+		if(t>=ChargeRefillTime)
 		{
-			ShadowTPCharges++;
+			ShadowCharges++;
 			MyUserWidget->ShadowChargedRefilled();
 			t = 0;
 		}
 		else
 		{
 			t += 1 * DeltaTime;
-			RechargeTP(DeltaTime);
+			RefillCharge(DeltaTime);
 		}
 	}
-	if (ShadowTPCharges > MAX_TP_CHARGES)
-		ShadowTPCharges = MAX_TP_CHARGES;
+	if (ShadowCharges > MAX_CHARGES)
+		ShadowCharges = MAX_CHARGES;
 }
 
-void UMyPlayerStats::RechargeTP(float deltaTime)
+void UMyPlayerStats::RefillCharge(float deltaTime)
 {
-	MyUserWidget->FillShadowCharge((100 / TPRechargeTime)* deltaTime) ;
+	MyUserWidget->FillShadowCharge((100 / ChargeRefillTime)* deltaTime) ;
 }
 
 

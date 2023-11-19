@@ -16,7 +16,9 @@
 #include "Engine/LocalPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Engine/PointLight.h"
 #include "Sound/SoundCue.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -73,10 +75,10 @@ void AMyProjectCharacter::BeginPlay()
 	}
 	if(MyUserWidget && MyPlayerStats)
 	{
-		//MyUserWidget->SetShadowCharge(MyPlayerStats->GetTPCharges());
+		//MyUserWidget->SetShadowCharge(MyPlayerStats->GetCharges());
 	}
 	CurrentTP = nullptr;
-	
+	CurrentPointLight = nullptr;
 }
 
 void AMyProjectCharacter::Tick(float DeltaSeconds)
@@ -100,6 +102,8 @@ void AMyProjectCharacter::Tick(float DeltaSeconds)
 
 	//interaction raycast
 	CastRayForInteraction();
+
+	//tp logic(sliding)
 	if(bIsTping)
 	{
 		float Alpha = (GetWorld()->GetTimeSeconds() - StartTime) / TPDuration;
@@ -276,7 +280,7 @@ void AMyProjectCharacter::CastRayForInteraction()
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.1f, 0.f, 5.f);
 	if(hit.GetActor())
-	   // UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
+	    UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
 	if (ActorHit && hit.GetActor()->IsA<AShadowTP>())
 	{
 		CurrentTP = Cast<AShadowTP>(hit.GetActor());
@@ -291,15 +295,17 @@ void AMyProjectCharacter::CastRayForInteraction()
 			CurrentTP->isRayCasting(true);
 		}
 	}
-	else
+	else if (ActorHit && hit.GetActor()->GetComponentByClass<UPointLightComponent>())
 	{
 		bCanTP = false;
+		bCanExtinguishLight = true;
 		if (CurrentTP)
 		{
 			CurrentTP->DisableTP();
 			CurrentTP->isRayCasting(false);
 			CurrentTP = nullptr;
 		}
+		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
 	}
 	else 
 	{
@@ -310,22 +316,19 @@ void AMyProjectCharacter::CastRayForInteraction()
 			CurrentTP->isRayCasting(false);
 			CurrentTP = nullptr;
 		}
-	    UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
 	}
 
 }
 
 void AMyProjectCharacter::Interact()
 {
+    if (!MyPlayerStats || MyPlayerStats->GetCharges() <= 0)
+			return; //early return
+    MyPlayerStats->UseCharge();
+    UE_LOG(LogTemp, Warning, TEXT("charge used"));
+	
 	if (bCanTP)
 	{
-		if (MyPlayerStats)
-		{
-			if (MyPlayerStats->GetTPCharges() <= 0)
-				return; //early return if no charges
-			MyPlayerStats->UseTPCharge();
-			 UE_LOG(LogTemp, Warning, TEXT("charge used"));
-		}
 		bIsTping = true;
 		if(CurrentTP)
 			CurrentTP->DisableTP();
@@ -333,9 +336,19 @@ void AMyProjectCharacter::Interact()
 		if(Swoosh)
 		    UGameplayStatics::PlaySound2D(this, Swoosh);
 		bCanTP = false;
+		//camera shake
 		StartTime = GetWorld()->GetTimeSeconds();
 	    StartLocation = GetActorLocation();
 		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0, 500);
+	}
+	else if(bCanExtinguishLight)
+	{
+		bCanExtinguishLight = false;
+		CurrentPointLight->SetIntensity(0.f);
+		CurrentPointLight->SetActive(false);
+		CurrentPointLight = nullptr;
+		UE_LOG(LogTemp, Warning, TEXT("light extinguished"));
+		//play sound
 	}
 }
 
