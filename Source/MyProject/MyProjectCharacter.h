@@ -62,7 +62,10 @@ class AMyProjectCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, meta = (AllowPrivateAccess = "true"))
 	class UPointLightComponent* CurrentPointLight;
-	
+
+	void ResetTP();
+	void ResetPointLight();
+
 public:
 	AMyProjectCharacter();
 

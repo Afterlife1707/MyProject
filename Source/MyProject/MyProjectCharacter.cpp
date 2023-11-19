@@ -281,8 +281,10 @@ void AMyProjectCharacter::CastRayForInteraction()
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.1f, 0.f, 5.f);
 	if(hit.GetActor())
 	    UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
+	//raycasting shadow tp
 	if (ActorHit && hit.GetActor()->IsA<AShadowTP>())
 	{
+		ResetPointLight();
 		CurrentTP = Cast<AShadowTP>(hit.GetActor());
 		if (!CurrentTP->CanBeUsed())
 		{
@@ -295,40 +297,48 @@ void AMyProjectCharacter::CastRayForInteraction()
 			CurrentTP->isRayCasting(true);
 		}
 	}
+	//raycasting point light
 	else if (ActorHit && hit.GetActor()->GetComponentByClass<UPointLightComponent>())
 	{
-		bCanTP = false;
+		ResetTP();
 		bCanExtinguishLight = true;
-		if (CurrentTP)
-		{
-			CurrentTP->DisableTP();
-			CurrentTP->isRayCasting(false);
-			CurrentTP = nullptr;
-		}
 		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
 	}
 	else 
 	{
-		bCanTP = false;
-		if (CurrentTP)
-		{
-			CurrentTP->DisableTP();
-			CurrentTP->isRayCasting(false);
-			CurrentTP = nullptr;
-		}
+		ResetTP();
+		ResetPointLight();
 	}
-
 }
 
+void AMyProjectCharacter::ResetTP()
+{
+	bCanTP = false;
+	if (CurrentTP)
+	{
+		CurrentTP->DisableTP();
+		CurrentTP->isRayCasting(false);
+		CurrentTP = nullptr;
+	}
+}
+
+void AMyProjectCharacter::ResetPointLight()
+{
+	bCanExtinguishLight = false;
+	if (CurrentPointLight)
+	{
+		CurrentPointLight = nullptr;
+	}
+}
 void AMyProjectCharacter::Interact()
 {
     if (!MyPlayerStats || MyPlayerStats->GetCharges() <= 0)
 			return; //early return
-    MyPlayerStats->UseCharge();
-    UE_LOG(LogTemp, Warning, TEXT("charge used"));
 	
 	if (bCanTP)
 	{
+		MyPlayerStats->UseCharge();
+		UE_LOG(LogTemp, Warning, TEXT("charge used"));
 		bIsTping = true;
 		if(CurrentTP)
 			CurrentTP->DisableTP();
@@ -343,6 +353,8 @@ void AMyProjectCharacter::Interact()
 	}
 	else if(bCanExtinguishLight)
 	{
+		MyPlayerStats->UseCharge();
+		UE_LOG(LogTemp, Warning, TEXT("charge used"));
 		bCanExtinguishLight = false;
 		CurrentPointLight->SetIntensity(0.f);
 		CurrentPointLight->SetActive(false);
