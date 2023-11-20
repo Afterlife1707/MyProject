@@ -19,6 +19,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/PointLight.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Sound/SoundCue.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -79,6 +80,7 @@ void AMyProjectCharacter::BeginPlay()
 	}
 	CurrentTP = nullptr;
 	CurrentPointLight = nullptr;
+	CurrentLightWidget = nullptr;
 }
 
 void AMyProjectCharacter::Tick(float DeltaSeconds)
@@ -115,6 +117,12 @@ void AMyProjectCharacter::Tick(float DeltaSeconds)
 		{
 			bIsTping = false;
 		}
+	}
+	if(bCanExtinguishLight)
+	{
+		FVector Direction = GetActorLocation() - CurrentLightWidget->GetComponentLocation();
+		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(CurrentLightWidget->GetComponentLocation(), GetActorLocation());
+		CurrentLightWidget->SetWorldRotation(Rot);
 	}
 }
 
@@ -248,7 +256,6 @@ void AMyProjectCharacter::MyCrouch()
 		UnCrouch();
 }
 
-
 void AMyProjectCharacter::Sprint()
 {
 	if (bIsCrouched)
@@ -276,13 +283,18 @@ void AMyProjectCharacter::CastRayForInteraction()
 	FVector Dir = FirstPersonCameraComponent->GetForwardVector();
 	Start = FVector(Start.X + (Dir.X * 100), Start.Y + (Dir.Y * 100), Start.Z + (Dir.Z * 150));
 	FVector End = Start + (Dir * RayLength);
-	bool ActorHit = GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_Pawn, FCollisionQueryParams(), FCollisionResponseParams());
+	bool ActorHit = GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_GameTraceChannel1, FCollisionQueryParams(), FCollisionResponseParams());
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.1f, 0.f, 5.f);
-	if(hit.GetActor())
-	    UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
+	//if(hit.GetActor())
+	    //UE_LOG(LogTemp, Warning, TEXT("obj %s"), *hit.GetActor()->GetActorNameOrLabel());
 	//raycasting shadow tp
-	if (ActorHit && hit.GetActor()->IsA<AShadowTP>())
+	if(!ActorHit)
+	{
+		ResetTP();
+		ResetPointLight();
+	}
+	else if (ActorHit && hit.GetActor()->IsA<AShadowTP>())
 	{
 		ResetPointLight();
 		CurrentTP = Cast<AShadowTP>(hit.GetActor());
@@ -294,7 +306,7 @@ void AMyProjectCharacter::CastRayForInteraction()
 		{
 			bCanTP = true;
 			CurrentTP->EnableTP();
-			CurrentTP->isRayCasting(true);
+			CurrentTP->isRayCasting(true, GetActorLocation());
 		}
 	}
 	//raycasting point light
@@ -303,14 +315,15 @@ void AMyProjectCharacter::CastRayForInteraction()
 		ResetTP();
 		if (!hit.GetActor()->GetActorEnableCollision())
 			return;
+		if (hit.GetActor()->GetComponentByClass<UWidgetComponent>())
+		{
+			CurrentLightWidget = hit.GetActor()->GetComponentByClass<UWidgetComponent>();
+			CurrentLightWidget->SetVisibility(true);
+		}
+		else
+			return;
 		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
-		UE_LOG(LogTemp, Warning, TEXT("light is %hhd"), hit.GetActor()->GetActorEnableCollision());
 		bCanExtinguishLight = true;
-	}
-	else 
-	{
-		ResetTP();
-		ResetPointLight();
 	}
 }
 
@@ -320,7 +333,7 @@ void AMyProjectCharacter::ResetTP()
 	if (CurrentTP)
 	{
 		CurrentTP->DisableTP();
-		CurrentTP->isRayCasting(false);
+		CurrentTP->isRayCasting(false, FVector::Zero());
 		CurrentTP = nullptr;
 	}
 }
@@ -330,6 +343,8 @@ void AMyProjectCharacter::ResetPointLight()
 	bCanExtinguishLight = false;
 	if (CurrentPointLight)
 	{
+		CurrentLightWidget->SetVisibility(false);
+		CurrentLightWidget = nullptr;
 		CurrentPointLight = nullptr;
 	}
 }
@@ -365,9 +380,6 @@ void AMyProjectCharacter::Interact()
 
 		CurrentPointLight->SetIntensity(0.f);
 		CurrentPointLight->GetOwner()->SetActorEnableCollision(false);
-		CurrentPointLight = nullptr;
+		ResetPointLight();
 	}
 }
-
-
-

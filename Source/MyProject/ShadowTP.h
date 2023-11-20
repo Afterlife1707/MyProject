@@ -16,6 +16,8 @@ class MYPROJECT_API AShadowTP : public AActor
 	bool bIsRaycasting;
 	UPROPERTY(VisibleAnywhere, Category=TP);
 	class UWidgetComponent* WidgetComponent;
+
+	FVector ActorLocation;
 public:	
 	// Sets default values for this actor's properties
 	AShadowTP();
@@ -26,7 +28,7 @@ public:
 	void DisableTP();
 	UFUNCTION(BlueprintCallable, Category = TP)
 	void EnableTP();
-    void isRayCasting(bool b);
+    void isRayCasting(bool b, const FVector& ActorLocation);
 
 protected:
 	// Called when the game starts or when spawned

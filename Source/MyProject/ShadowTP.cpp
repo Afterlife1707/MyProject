@@ -4,6 +4,7 @@
 #include "ShadowTP.h"
 
 #include "Components/WidgetComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AShadowTP::AShadowTP()
@@ -37,6 +38,9 @@ void AShadowTP::Tick(float DeltaTime)
 	}
 	else if(bIsRaycasting && bCanBeUsed && WidgetComponent)
 	{
+		FVector Direction = GetActorLocation() - WidgetComponent->GetComponentLocation();
+		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(WidgetComponent->GetComponentLocation(), ActorLocation);
+		WidgetComponent->SetWorldRotation(Rot);
 	    if(WidgetComponent->IsVisible())
 	        return;
 	    WidgetComponent->SetVisibility(true);
@@ -62,8 +66,9 @@ void AShadowTP::EnableTP()
 	bCanBeUsed = true;
 }
 
-void AShadowTP::isRayCasting(bool b)
+void AShadowTP::isRayCasting(bool b, const FVector& actorLocation)
 {
 	bIsRaycasting = b;
+	ActorLocation = actorLocation;
 }
 

@@ -59,7 +59,7 @@ class AMyProjectCharacter : public ACharacter
 
 	//temp tp
 	class AShadowTP* CurrentTP;
-
+	class UWidgetComponent* CurrentLightWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, meta = (AllowPrivateAccess = "true"))
 	class UPointLightComponent* CurrentPointLight;
 
