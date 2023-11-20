@@ -300,11 +300,11 @@ void AMyProjectCharacter::CastRayForInteraction()
 	//raycasting point light
 	else if (ActorHit && hit.GetActor()->GetComponentByClass<UPointLightComponent>())
 	{
+		ResetTP();
 		if (!hit.GetActor()->GetActorEnableCollision())
 			return;
 		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
 		UE_LOG(LogTemp, Warning, TEXT("light is %hhd"), hit.GetActor()->GetActorEnableCollision());
-		ResetTP();
 		bCanExtinguishLight = true;
 	}
 	else 
@@ -341,29 +341,31 @@ void AMyProjectCharacter::Interact()
 	if (bCanTP)
 	{
 		MyPlayerStats->UseCharge();
-		UE_LOG(LogTemp, Warning, TEXT("charge used"));
 		bIsTping = true;
 		if(CurrentTP)
 			CurrentTP->DisableTP();
 		//play sound
-		if(Swoosh)
-		    UGameplayStatics::PlaySound2D(this, Swoosh);
+		if(TPSound)
+		    UGameplayStatics::PlaySound2D(this, TPSound);
 		bCanTP = false;
 		//camera shake
 		StartTime = GetWorld()->GetTimeSeconds();
 	    StartLocation = GetActorLocation();
-		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0, 500);
+		UGameplayStatics::PlayWorldCameraShake(this, TPCameraShake, GetActorLocation(), 0, 500);
 	}
 	else if(bCanExtinguishLight)
 	{
 		MyPlayerStats->UseCharge();
-		UE_LOG(LogTemp, Warning, TEXT("charge used"));
 		bCanExtinguishLight = false;
+		UE_LOG(LogTemp, Warning, TEXT("light extinguished"));
+
+		UGameplayStatics::PlayWorldCameraShake(this, LightCameraShake, GetActorLocation(), 0, 500);
+		if (LightExtinguishCue)
+			UGameplayStatics::PlaySound2D(this, LightExtinguishCue);
+
 		CurrentPointLight->SetIntensity(0.f);
 		CurrentPointLight->GetOwner()->SetActorEnableCollision(false);
 		CurrentPointLight = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("light extinguished"));
-		//play sound
 	}
 }
 

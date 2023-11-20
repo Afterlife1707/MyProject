@@ -84,18 +84,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool isSprinting;
 
-	//teleporting
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Raycast")
 	float RayLength = 2000.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Raycast")
+
+	//teleporting
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TP")
 	bool bCanTP;
 	float StartingSpeed;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Raycast")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TP")
 	float TPDuration = 2.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Raycast")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TP")
 	float TPThreshold = 300.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TP")
-    TSubclassOf<UCameraShakeBase> CameraShake;
+    TSubclassOf<UCameraShakeBase> TPCameraShake;
 	bool bIsTping;
 	float StartTime;
 	FVector StartLocation;
@@ -103,6 +104,8 @@ protected:
 
 	//light
 	bool bCanExtinguishLight;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fire")
+	TSubclassOf<UCameraShakeBase> LightCameraShake;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats)
 	UMyPlayerStats* MyPlayerStats;
@@ -133,12 +136,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* FootstepAudioComponent;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Audio")
 	USoundCue* WalkSoundCue;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Audio")
-	USoundWave* Swoosh;
+	USoundWave* TPSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	USoundCue* LightExtinguishCue;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
 	UMyUserWidget* MyUserWidget;
