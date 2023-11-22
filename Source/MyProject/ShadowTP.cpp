@@ -3,7 +3,9 @@
 
 #include "ShadowTP.h"
 
+#include "Components/Image.h"
 #include "Components/WidgetComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values

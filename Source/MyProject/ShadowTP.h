@@ -29,7 +29,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = TP)
 	void EnableTP();
     void isRayCasting(bool b, const FVector& ActorLocation);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

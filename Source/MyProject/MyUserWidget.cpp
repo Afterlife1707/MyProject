@@ -3,6 +3,7 @@
 
 #include "MyUserWidget.h"
 
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 
 
@@ -49,4 +50,15 @@ void UMyUserWidget::UseShadowCharge()
             break;
         }
     }
+}
+
+void UMyUserWidget::EffectVisibility(bool b)
+{
+    EffectImage->SetVisibility(b?ESlateVisibility::Visible:ESlateVisibility::Hidden);
+    bIsEffectVisible = b;
+}
+
+UImage* UMyUserWidget::GetImage()
+{
+    return EffectImage;
 }

@@ -358,7 +358,9 @@ void AMyProjectCharacter::Interact()
 		MyPlayerStats->UseCharge();
 		bIsTping = true;
 		if(CurrentTP)
+		{
 			CurrentTP->DisableTP();
+		}
 		//play sound
 		if(TPSound)
 		    UGameplayStatics::PlaySound2D(this, TPSound);

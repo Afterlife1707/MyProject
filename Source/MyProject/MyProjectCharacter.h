@@ -69,9 +69,49 @@ class AMyProjectCharacter : public ACharacter
 public:
 	AMyProjectCharacter();
 
+	/** Returns Mesh1P subobject **/
+	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	/** Returns FirstPersonCameraComponent subobject **/
+	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
     virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
     virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
     virtual void CalcCamera(float DeltaTime, FMinimalViewInfo& OutResult) override;
+
+	void Sprint();
+	void UnSprint();
+	void MyCrouch();
+	void Interact();
+
+	/** Bool for AnimBP to switch to another animation set */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	bool bHasRifle;
+
+	/** Setter to set the bool */
+	UFUNCTION(BlueprintCallable, Category = Weapon)
+	void SetHasRifle(bool bNewHasRifle);
+
+	/** Getter for the bool */
+	UFUNCTION(BlueprintCallable, Category = Weapon)
+	bool GetHasRifle();
+
+	void CastRayForInteraction();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
+	FVector CrouchEyeOffset;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
+	float CrouchSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* FootstepAudioComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	USoundCue* WalkSoundCue;
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	USoundWave* TPSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	USoundCue* LightExtinguishCue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
+	UMyUserWidget* MyUserWidget;
 
 protected:
 	virtual void BeginPlay() override;
@@ -106,69 +146,19 @@ protected:
 	bool bCanExtinguishLight;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fire")
 	TSubclassOf<UCameraShakeBase> LightCameraShake;
-
+	//stats
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats)
 	UMyPlayerStats* MyPlayerStats;
 
-	//temp bool, fix this later
-	bool isWidgetSet;
-public:
-
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
-	void MyCrouch();
-
-	void CastRayForInteraction();
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category= "Crouch")
-	FVector CrouchEyeOffset;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
-	float CrouchSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio")
-	UAudioComponent* FootstepAudioComponent;
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
-	USoundCue* WalkSoundCue;
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
-	USoundWave* TPSound;
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
-	USoundCue* LightExtinguishCue;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
-	UMyUserWidget* MyUserWidget;
-
-	void Sprint();
-	void UnSprint();
-
-	void Interact();
-
-
-protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
-
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-protected:
-	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
 
-public:
-	/** Returns Mesh1P subobject **/
-	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	//temp bool, fix this later
+	bool isWidgetSet;
 
 };
 

@@ -28,6 +28,7 @@ void UMyPlayerStats::UseCharge()
 {
 	if (MyUserWidget)
 	{
+		MyUserWidget->EffectVisibility(true);
 		MyUserWidget->UseShadowCharge();
 		ShadowCharges--;
 	}
@@ -59,6 +60,7 @@ void UMyPlayerStats::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		else
 		{
 			t += 1 * DeltaTime;
+
 			RefillCharge(DeltaTime);
 		}
 	}
