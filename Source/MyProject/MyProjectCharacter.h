@@ -160,5 +160,9 @@ protected:
 	//temp bool, fix this later
 	bool isWidgetSet;
 
+
+private:
+	class UAIPerceptionStimuliSourceComponent* StimulusSource;
+	void SetupStimulus();
 };
 

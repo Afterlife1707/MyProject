@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PatrolPath.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
 #include "NPC.generated.h"
@@ -22,12 +23,16 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UBehaviorTree* GetBehaviourTree();
+
+	APatrolPath* GetPatrolPath() const;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=AI, meta=(AllowPrivateAccess="true"))
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI, meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
-public:	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI, meta = (AllowPrivateAccess = "true"))
+	APatrolPath* PatrolPath;
 
 };

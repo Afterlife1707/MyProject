@@ -37,3 +37,8 @@ UBehaviorTree* ANPC::GetBehaviourTree()
 	return Tree;
 }
 
+APatrolPath* ANPC::GetPatrolPath() const
+{
+	return PatrolPath;
+}
+

@@ -18,8 +18,11 @@
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Engine/PointLight.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
+
 #include "Sound/SoundCue.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -60,6 +63,9 @@ AMyProjectCharacter::AMyProjectCharacter()
 	FootstepAudioComponent->SetupAttachment(RootComponent);
 	FootstepAudioComponent->bAutoActivate = false;
 	FootstepAudioComponent->VolumeMultiplier = 0.7f;
+
+	//ai
+	SetupStimulus();
 }
 
 void AMyProjectCharacter::BeginPlay()
@@ -158,6 +164,16 @@ void AMyProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void AMyProjectCharacter::SetupStimulus()
+{
+	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if(StimulusSource)
+	{
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
 
