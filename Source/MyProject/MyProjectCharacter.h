@@ -81,21 +81,14 @@ public:
 	void Sprint();
 	void UnSprint();
 	void MyCrouch();
+	void CastRayForInteraction();
 	void Interact();
 
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
+	void SpottedByNPC();
 
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
+	UFUNCTION(BlueprintImplementableEvent, Category ="GameOver")
+	void GameEnd();
 
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
-	void CastRayForInteraction();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
 	FVector CrouchEyeOffset;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
@@ -159,7 +152,7 @@ protected:
 
 	//temp bool, fix this later
 	bool isWidgetSet;
-
+	bool bIsGameOver;
 
 private:
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;

@@ -31,8 +31,6 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AMyProjectCharacter::AMyProjectCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
 	StartingSpeed = MoveSpeed;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -87,11 +85,17 @@ void AMyProjectCharacter::BeginPlay()
 	CurrentTP = nullptr;
 	CurrentPointLight = nullptr;
 	CurrentLightWidget = nullptr;
+	bIsGameOver = false;
 }
 
 void AMyProjectCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+	if (bIsGameOver)
+	{
+		FootstepAudioComponent->Stop();
+		return;
+	}
 	if (MyUserWidget && !isWidgetSet)
 	{
 		isWidgetSet = true;
@@ -179,6 +183,8 @@ void AMyProjectCharacter::SetupStimulus()
 
 void AMyProjectCharacter::Move(const FInputActionValue& Value)
 {
+	if (bIsGameOver)
+		return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -212,6 +218,8 @@ void AMyProjectCharacter::Move(const FInputActionValue& Value)
 
 void AMyProjectCharacter::Look(const FInputActionValue& Value)
 {
+	if (bIsGameOver)
+		return;
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -254,18 +262,10 @@ void AMyProjectCharacter::CalcCamera(float DeltaTime, FMinimalViewInfo& OutResul
 	}
 }
 
-void AMyProjectCharacter::SetHasRifle(bool bNewHasRifle)
-{
-	bHasRifle = bNewHasRifle;
-}
-
-bool AMyProjectCharacter::GetHasRifle()
-{
-	return bHasRifle;
-}
-
 void AMyProjectCharacter::MyCrouch()
 {
+	if (bIsGameOver)
+		return;
 	if(!bIsCrouched)
 	    Crouch();
 	else
@@ -366,6 +366,8 @@ void AMyProjectCharacter::ResetPointLight()
 }
 void AMyProjectCharacter::Interact()
 {
+	if (bIsGameOver)
+		return;
     if (!MyPlayerStats || MyPlayerStats->GetCharges() <= 0)
 			return; //early return
 	
@@ -400,4 +402,10 @@ void AMyProjectCharacter::Interact()
 		CurrentPointLight->GetOwner()->SetActorEnableCollision(false);
 		ResetPointLight();
 	}
+}
+
+void AMyProjectCharacter::SpottedByNPC()
+{
+	bIsGameOver = true;
+	GameEnd();
 }
