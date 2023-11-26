@@ -7,12 +7,15 @@
 #include "NPC.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"
 
 ANPC_AIController::ANPC_AIController(FObjectInitializer const& ObjectInitializer)
 {
     SetupPerceptionSystem();
 }
+
+
 
 void ANPC_AIController::OnPossess(APawn* InPawn)
 {
@@ -47,6 +50,20 @@ void ANPC_AIController::SetupPerceptionSystem()
         GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
         GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
         GetPerceptionComponent()->ConfigureSense(*SightConfig);
+        SightID = SightConfig->GetSenseID();
+    }
+
+    HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
+    if(HearingConfig)
+    {
+        HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+        HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+        HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+        HearingConfig->HearingRange = 3000.f;
+
+        GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
+        GetPerceptionComponent()->ConfigureSense(*HearingConfig);
+        HearID = HearingConfig->GetSenseID();
     }
 }
 
@@ -54,7 +71,18 @@ void ANPC_AIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimul
 {
     if(auto* const ch = Cast<AMyProjectCharacter>(Actor))
     {
-        GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
-        ch->SpottedByNPC();
+        if (Stimulus.Type== SightID)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Seen by NPC"));
+            GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
+            ch->SpottedByNPC();
+        }
+        else if (Stimulus.Type == HearID)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Heard by NPC"));
+            GetBlackboardComponent()->SetValueAsBool("CanHearPlayer", Stimulus.WasSuccessfullySensed());
+            GetBlackboardComponent()->SetValueAsVector("LastHeardLocation", Stimulus.StimulusLocation);
+            ch->HeardByNPC();
+        }
     }
 }

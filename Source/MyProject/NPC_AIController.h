@@ -23,9 +23,11 @@ protected:
 
 private:
 	class UAISenseConfig_Sight* SightConfig;
+	class UAISenseConfig_Hearing* HearingConfig;
 
 	void SetupPerceptionSystem();
-
+	FAISenseID SightID; 
+	FAISenseID HearID;
 	UFUNCTION()
 	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 };

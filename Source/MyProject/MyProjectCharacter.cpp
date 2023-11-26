@@ -21,6 +21,8 @@
 #include "Kismet/KismetMathLibrary.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AIPerceptionSystem.h"
+#include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Sight.h"
 
 #include "Sound/SoundCue.h"
@@ -82,6 +84,10 @@ void AMyProjectCharacter::BeginPlay()
 	{
 		//MyUserWidget->SetShadowCharge(MyPlayerStats->GetCharges());
 	}
+
+	UAIPerceptionSystem::RegisterPerceptionStimuliSource(this, UAISense_Sight::StaticClass(), this);
+	UAIPerceptionSystem::RegisterPerceptionStimuliSource(this, UAISense_Hearing::StaticClass(), this);
+
 	CurrentTP = nullptr;
 	CurrentPointLight = nullptr;
 	CurrentLightWidget = nullptr;
@@ -177,6 +183,7 @@ void AMyProjectCharacter::SetupStimulus()
 	if(StimulusSource)
 	{
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
@@ -200,11 +207,13 @@ void AMyProjectCharacter::Move(const FInputActionValue& Value)
 			{
 				//UE_LOG(LogTemp, Warning, TEXT("SPRINGING"));
 				FootstepAudioComponent->SetPitchMultiplier(SprintSpeed*2.45f);
+				Loudness = 1.75f;
 			}
 			else if (WalkSoundCue)
 			{
 				//UE_LOG(LogTemp, Warning, TEXT("WALKING"));
 				FootstepAudioComponent->SetPitchMultiplier(MoveSpeed*2.45f); // Reset pitch for walking
+				Loudness = 1.1f;
 			}
 
 			if (!FootstepAudioComponent->IsPlaying())
@@ -212,6 +221,8 @@ void AMyProjectCharacter::Move(const FInputActionValue& Value)
 				//UE_LOG(LogTemp, Warning, TEXT("PLAYING"));
 				FootstepAudioComponent->Play();
 			}
+			if(!bIsCrouched)
+			    UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), Loudness, this, 3000.f, TagForSound);
 		}
 	}
 }
@@ -408,4 +419,9 @@ void AMyProjectCharacter::SpottedByNPC()
 {
 	bIsGameOver = true;
 	GameEnd();
+}
+
+void AMyProjectCharacter::HeardByNPC()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("heard by npc"));
 }

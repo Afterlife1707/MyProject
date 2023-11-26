@@ -85,11 +85,12 @@ public:
 	void Interact();
 
 	void SpottedByNPC();
+    void HeardByNPC();
 
 	UFUNCTION(BlueprintImplementableEvent, Category ="GameOver")
 	void GameEnd();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
 	FVector CrouchEyeOffset;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
 	float CrouchSpeed;
@@ -113,6 +114,10 @@ protected:
 	float MoveSpeed = 0.4f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
 	float SprintSpeed = 0.8f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
+	float Loudness = 1.1f;
+	FName TagForSound = TEXT("Player Footsteps");
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool isSprinting;
