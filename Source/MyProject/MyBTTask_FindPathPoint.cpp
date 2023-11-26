@@ -25,6 +25,8 @@ EBTNodeResult::Type UMyBTTask_FindPathPoint::ExecuteTask(UBehaviorTreeComponent&
             //get the npc
             if(auto* npc = Cast<ANPC>(controller->GetPawn()))
             {
+                if(!npc->GetPatrolPath())
+                    return EBTNodeResult::Failed;
                 //get the current patrol path vector from the npc - this is the local patrol path actor
                 auto const Point = npc->GetPatrolPath()->GetPatrolPoint(index);
 

@@ -59,7 +59,7 @@ void ANPC_AIController::SetupPerceptionSystem()
         HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
         HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
         HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-        HearingConfig->HearingRange = 3000.f;
+        HearingConfig->HearingRange = 2500.f;
 
         GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
         GetPerceptionComponent()->ConfigureSense(*HearingConfig);
@@ -71,7 +71,7 @@ void ANPC_AIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimul
 {
     if(auto* const ch = Cast<AMyProjectCharacter>(Actor))
     {
-        if (Stimulus.Type== SightID)
+        if (Stimulus.Type== SightID && ch->IsPlayerInLight())
         {
             UE_LOG(LogTemp, Warning, TEXT("Seen by NPC"));
             GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());

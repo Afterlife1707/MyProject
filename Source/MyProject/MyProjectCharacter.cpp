@@ -425,3 +425,14 @@ void AMyProjectCharacter::HeardByNPC()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("heard by npc"));
 }
+
+bool AMyProjectCharacter::IsPlayerInLight() const
+{
+	return bIsPlayerInLight;
+}
+
+void AMyProjectCharacter::SetIsPlayerInLight(bool b)
+{
+	UE_LOG(LogTemp, Warning, TEXT("in light : %hhd"),b);
+	bIsPlayerInLight = b;
+}

@@ -16,6 +16,7 @@ class MYPROJECT_API ANPC : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ANPC();
+	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

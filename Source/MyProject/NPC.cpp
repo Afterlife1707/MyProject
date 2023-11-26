@@ -12,6 +12,11 @@ ANPC::ANPC()
 	//FootstepAudioComponent->AttenuationSettings = Attenuation;
 }
 
+void ANPC::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
+{
+    Super::GetActorEyesViewPoint(OutLocation, OutRotation);
+}
+
 // Called when the game starts or when spawned
 void ANPC::BeginPlay()
 {

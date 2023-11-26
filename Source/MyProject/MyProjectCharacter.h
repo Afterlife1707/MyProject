@@ -65,7 +65,8 @@ class AMyProjectCharacter : public ACharacter
 
 	void ResetTP();
 	void ResetPointLight();
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, meta = (AllowPrivateAccess = "true"))
+	bool bIsPlayerInLight;
 public:
 	AMyProjectCharacter();
 
@@ -84,8 +85,12 @@ public:
 	void CastRayForInteraction();
 	void Interact();
 
+	//npc ai
 	void SpottedByNPC();
     void HeardByNPC();
+	bool IsPlayerInLight() const;
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetIsPlayerInLight(bool b);
 
 	UFUNCTION(BlueprintImplementableEvent, Category ="GameOver")
 	void GameEnd();
