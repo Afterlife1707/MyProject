@@ -13,6 +13,7 @@
 #include "MyPlayerStats.h"
 #include "MyUserWidget.h"
 #include "ShadowTP.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
@@ -63,9 +64,6 @@ AMyProjectCharacter::AMyProjectCharacter()
 	FootstepAudioComponent->SetupAttachment(RootComponent);
 	FootstepAudioComponent->bAutoActivate = false;
 	FootstepAudioComponent->VolumeMultiplier = 0.7f;
-
-	//ai
-	SetupStimulus();
 }
 
 void AMyProjectCharacter::BeginPlay()
@@ -85,8 +83,7 @@ void AMyProjectCharacter::BeginPlay()
 		//MyUserWidget->SetShadowCharge(MyPlayerStats->GetCharges());
 	}
 
-	UAIPerceptionSystem::RegisterPerceptionStimuliSource(this, UAISense_Sight::StaticClass(), this);
-	UAIPerceptionSystem::RegisterPerceptionStimuliSource(this, UAISense_Hearing::StaticClass(), this);
+	//ai
 
 	CurrentTP = nullptr;
 	CurrentPointLight = nullptr;
@@ -102,9 +99,9 @@ void AMyProjectCharacter::Tick(float DeltaSeconds)
 		FootstepAudioComponent->Stop();
 		return;
 	}
-	if (MyUserWidget && !isWidgetSet)
+	if (MyUserWidget && !bIsWidgetSet)
 	{
-		isWidgetSet = true;
+		bIsWidgetSet = true;
 		UE_LOG(LogTemp, Warning, TEXT("setting user widget"));
 		MyPlayerStats->SetUserWidget(MyUserWidget);
 	}
@@ -126,10 +123,10 @@ void AMyProjectCharacter::Tick(float DeltaSeconds)
 	{
 		float Alpha = (GetWorld()->GetTimeSeconds() - StartTime) / TPDuration;
 		Alpha = FMath::Clamp(Alpha, 0.0f, 1.0f);
-		FVector NewLocation = FMath::Lerp(StartLocation, hit.GetActor()->GetActorLocation(), Alpha);
+		FVector NewLocation = FMath::Lerp(StartLocation, Hit.GetActor()->GetActorLocation(), Alpha);
 		SetActorLocation(NewLocation);
 		//if(Alpha>=0.8f)
-		if (FVector::Distance(GetActorLocation(), hit.GetActor()->GetActorLocation())<TPThreshold)
+		if (FVector::Distance(GetActorLocation(), Hit.GetActor()->GetActorLocation())<TPThreshold)
 		{
 			bIsTping = false;
 		}
@@ -177,16 +174,7 @@ void AMyProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	}
 }
 
-void AMyProjectCharacter::SetupStimulus()
-{
-	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
-	if(StimulusSource)
-	{
-		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
-		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
-		StimulusSource->RegisterWithPerceptionSystem();
-	}
-}
+
 
 void AMyProjectCharacter::Move(const FInputActionValue& Value)
 {
@@ -310,7 +298,7 @@ void AMyProjectCharacter::CastRayForInteraction()
 	FVector Dir = FirstPersonCameraComponent->GetForwardVector();
 	Start = FVector(Start.X + (Dir.X * 100), Start.Y + (Dir.Y * 100), Start.Z + (Dir.Z * 150));
 	FVector End = Start + (Dir * RayLength);
-	bool ActorHit = GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_GameTraceChannel1, FCollisionQueryParams(), FCollisionResponseParams());
+	bool ActorHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_GameTraceChannel1, FCollisionQueryParams(), FCollisionResponseParams());
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.1f, 0.f, 5.f);
 	//if(hit.GetActor())
@@ -321,10 +309,10 @@ void AMyProjectCharacter::CastRayForInteraction()
 		ResetTP();
 		ResetPointLight();
 	}
-	else if (ActorHit && hit.GetActor()->IsA<AShadowTP>())
+	else if (ActorHit && Hit.GetActor()->IsA<AShadowTP>())
 	{
 		ResetPointLight();
-		CurrentTP = Cast<AShadowTP>(hit.GetActor());
+		CurrentTP = Cast<AShadowTP>(Hit.GetActor());
 		if (!CurrentTP->CanBeUsed())
 		{
 			bCanTP = false;
@@ -337,19 +325,19 @@ void AMyProjectCharacter::CastRayForInteraction()
 		}
 	}
 	//raycasting point light
-	else if (ActorHit && hit.GetActor()->GetComponentByClass<UPointLightComponent>())
+	else if (ActorHit && Hit.GetActor()->GetComponentByClass<UPointLightComponent>())
 	{
 		ResetTP();
-		if (!hit.GetActor()->GetActorEnableCollision())
+		if (!Hit.GetActor()->GetActorEnableCollision())
 			return;
-		if (hit.GetActor()->GetComponentByClass<UWidgetComponent>())
+		if (Hit.GetActor()->GetComponentByClass<UWidgetComponent>())
 		{
-			CurrentLightWidget = hit.GetActor()->GetComponentByClass<UWidgetComponent>();
+			CurrentLightWidget = Hit.GetActor()->GetComponentByClass<UWidgetComponent>();
 			CurrentLightWidget->SetVisibility(true);
 		}
 		else
 			return;
-		CurrentPointLight = (hit.GetActor()->GetComponentByClass<UPointLightComponent>());
+		CurrentPointLight = (Hit.GetActor()->GetComponentByClass<UPointLightComponent>());
 		bCanExtinguishLight = true;
 	}
 }
@@ -408,8 +396,11 @@ void AMyProjectCharacter::Interact()
 		UGameplayStatics::PlayWorldCameraShake(this, LightCameraShake, GetActorLocation(), 0, 500);
 		if (LightExtinguishCue)
 			UGameplayStatics::PlaySound2D(this, LightExtinguishCue);
-
+		if (bIsPlayerInLight)
+			SetIsPlayerInLight(false);
+		UE_LOG(LogTemp, Warning, TEXT("in light : %hhd"), bIsPlayerInLight);
 		CurrentPointLight->SetIntensity(0.f);
+		CurrentPointLight->GetOwner()->SetActorTickEnabled(false);
 		CurrentPointLight->GetOwner()->SetActorEnableCollision(false);
 		ResetPointLight();
 	}
@@ -417,8 +408,8 @@ void AMyProjectCharacter::Interact()
 
 void AMyProjectCharacter::SpottedByNPC()
 {
-	bIsGameOver = true;
-	GameEnd();
+    bIsGameOver = true;
+    GameEnd();
 }
 
 void AMyProjectCharacter::HeardByNPC()
@@ -435,4 +426,5 @@ void AMyProjectCharacter::SetIsPlayerInLight(bool b)
 {
 	UE_LOG(LogTemp, Warning, TEXT("in light : %hhd"),b);
 	bIsPlayerInLight = b;
+	ToggleVisibilityBlocker();
 }

@@ -91,6 +91,9 @@ public:
 	bool IsPlayerInLight() const;
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void SetIsPlayerInLight(bool b);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Player")
+	void ToggleVisibilityBlocker();
+
 
 	UFUNCTION(BlueprintImplementableEvent, Category ="GameOver")
 	void GameEnd();
@@ -111,6 +114,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
 	UMyUserWidget* MyUserWidget;
+
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -143,7 +148,7 @@ protected:
 	bool bIsTping;
 	float StartTime;
 	FVector StartLocation;
-	FHitResult hit;
+	FHitResult Hit;
 
 	//light
 	bool bCanExtinguishLight;
@@ -161,11 +166,10 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
 	//temp bool, fix this later
-	bool isWidgetSet;
+	bool bIsWidgetSet;
 	bool bIsGameOver;
 
 private:
-	class UAIPerceptionStimuliSourceComponent* StimulusSource;
-	void SetupStimulus();
+
 };
 

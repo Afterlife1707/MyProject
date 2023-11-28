@@ -48,7 +48,6 @@ void ANPC_AIController::SetupPerceptionSystem()
         SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 
         GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-        GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
         GetPerceptionComponent()->ConfigureSense(*SightConfig);
         SightID = SightConfig->GetSenseID();
     }
@@ -60,29 +59,27 @@ void ANPC_AIController::SetupPerceptionSystem()
         HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
         HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
         HearingConfig->HearingRange = 2500.f;
-
-        GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
         GetPerceptionComponent()->ConfigureSense(*HearingConfig);
         HearID = HearingConfig->GetSenseID();
     }
+    GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ANPC_AIController::OnTargetDetected);
 }
 
 void ANPC_AIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-    if(auto* const ch = Cast<AMyProjectCharacter>(Actor))
+    if(auto* const Ch = Cast<AMyProjectCharacter>(Actor))
     {
-        if (Stimulus.Type== SightID && ch->IsPlayerInLight())
+        if (Stimulus.Type == SightID)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Seen by NPC"));
+            UE_LOG(LogTemp, Warning, TEXT("seen"));
             GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
-            ch->SpottedByNPC();
+            Ch->SpottedByNPC();
         }
         else if (Stimulus.Type == HearID)
         {
-            UE_LOG(LogTemp, Warning, TEXT("Heard by NPC"));
             GetBlackboardComponent()->SetValueAsBool("CanHearPlayer", Stimulus.WasSuccessfullySensed());
             GetBlackboardComponent()->SetValueAsVector("LastHeardLocation", Stimulus.StimulusLocation);
-            ch->HeardByNPC();
+            Ch->HeardByNPC();
         }
     }
 }
