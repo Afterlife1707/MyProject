@@ -69,7 +69,7 @@ void ANPC_AIController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimul
 {
     if(auto* const Ch = Cast<AMyProjectCharacter>(Actor))
     {
-        if (Stimulus.Type == SightID)
+        if (Stimulus.Type == SightID && Ch->IsPlayerInLight())
         {
             UE_LOG(LogTemp, Warning, TEXT("seen"));
             GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
